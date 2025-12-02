@@ -17,8 +17,13 @@ dependencies = [
     "tyro>=0.9.17",
     "diff-surfel-rasterization",
     "simple-knn",
+
 ]
 
+[tool.uv]
+override-dependencies = [
+    "pywin32==306; sys_platform == 'win32'",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -34,6 +39,7 @@ simple-knn = { path = "src/simple-knn", editable=true}
 [[tool.uv.index]]
 name = "nvidia"
 url = "https://pypi.nvidia.com/"
+# explicit = true
 
 [[tool.uv.index]]
 name = "pytorch"
