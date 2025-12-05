@@ -17,9 +17,13 @@ def reach(obj_name, threshold=0.05):
         return dist < threshold
     return checker
 
-def lift(obj_name, default_height=0.1, threshold=0.05):
+def lift(obj_name, threshold=0.05, default_height=None):
     def checker(env):
+        nonlocal default_height
         object_pos = env.scene[obj_name].data.root_pos_w[0]
+        if default_height is None:
+            default_height = env.scene[obj_name].data.default_root_state[0,2]
+
         return (object_pos[2] - default_height).item() > threshold
     return checker
 

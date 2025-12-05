@@ -45,8 +45,16 @@ def main(eval_args: EvalArgs):
     from polaris.policy import InferenceClient
     # from real2simeval.autoscoring import TASK_TO_SUCCESS_CHECKER
 
-    # TODO: Success checker
-    language_instruction, initial_conditions = load_eval_initial_conditions(eval_args.initial_conditions_file, eval_args.usd)
+    env_cfg = parse_env_cfg(
+        eval_args.environment,
+        # usd_file=eval_args.usd,
+        device="cuda",
+        num_envs=1,
+        use_fabric=True,
+    )
+    env: MangerBasedRLSplatEnv = gym.make(eval_args.environment, cfg=env_cfg)   # type: ignore
+
+    language_instruction, initial_conditions = load_eval_initial_conditions(eval_args.initial_conditions_file, env.usd_file)
     rollouts = len(initial_conditions)
     run_folder = run_folder_path(eval_args.run_folder, eval_args.environment, eval_args.policy.name)
     # Resume CSV logging
@@ -66,14 +74,6 @@ def main(eval_args: EvalArgs):
         return
 
     policy_client: InferenceClient = InferenceClient.get_client(eval_args.policy)
-    env_cfg = parse_env_cfg(
-        eval_args.environment,
-        # usd_file=eval_args.usd,
-        device="cuda",
-        num_envs=1,
-        use_fabric=True,
-    )
-    env: MangerBasedRLSplatEnv = gym.make(eval_args.environment, cfg=env_cfg)   # type: ignore
 
     video = []
     horizon = env.max_episode_length

@@ -46,6 +46,45 @@ gym.register(
 )
 
 
+gym.register(
+    id='DROID-FoodBussing',
+    entry_point=MangerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "environments/food_bussing/g60_corner.usd"),
+        "rubric": Rubric (
+            criteria=[
+                checkers.reach("ice_cream_", threshold=0.2),
+                checkers.reach("grapes", threshold=0.2),
+                (checkers.lift("ice_cream_", threshold=0.06), [0]),
+                (checkers.lift("grapes", threshold=0.06), [1]),
+                (checkers.is_within_xy("ice_cream_", "bowl", percent_threshold=0.8), [2]),
+                (checkers.is_within_xy("grapes", "bowl", percent_threshold=0.8), [3]),
+            ]
+        ),
+    }
+)
+
+gym.register(
+    id='DROID-PanClean',
+    entry_point=MangerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "environments/pan_clean/g60_stovetop_zed.usd"),
+        "rubric": Rubric (
+            criteria=[
+                checkers.reach("sponge", threshold=0.2),
+                (checkers.lift("sponge", threshold=0.09, default_height=0.0), [0]),
+                (checkers.is_within_xy("sponge", "pan", percent_threshold=0.8), [1]),
+            ]
+        ),
+    },
+)
+
 # # =============================================================================
 # # Rubric Registration
 # # Define which rubric to use for each task (identified by USD stem name)

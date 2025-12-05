@@ -314,8 +314,7 @@ class EnvCfg(ManagerBasedRLEnvCfg):
     curriculum = CurriculumCfg()
 
     def __post_init__(self):
-        # self.episode_length_s = 30
-        self.episode_length_s = 5
+        self.episode_length_s = 30
 
         self.viewer.eye = (4.5, 0.0, 6.0)
         self.viewer.lookat = (0.0, 0.0, 0.0)

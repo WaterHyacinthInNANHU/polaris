@@ -40,15 +40,14 @@ PI05_SERVER = PolicyServer(
 config = BatchConfig(
     jobs=[
         JobCfg(
-            server=PI0_SERVER,
+            server=PI05_SERVER,
             eval_args=EvalArgs(
-                environment="DROID-BlockStackKitchen",
+                environment="DROID-FoodBussing",
                 policy=PolicyArgs(
-                    name="pi0_fast_droid_jointpos",
+                    name="pi05_droid_jointpos",
                     client="DroidJointPos",
                     open_loop_horizon=8,
                 ),
-                initial_conditions_file="PolaRiS-assets/environments/block_stack_kitchen/initial_conditions_silly.json"
             ),
         ),
 

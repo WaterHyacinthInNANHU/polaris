@@ -303,6 +303,11 @@ def run_eval_job(job: JobCfg, run_folder: str, job_index: int, gpu_id: int = 0) 
     }
     
     start_time = datetime.now()
+    end_time = start_time  # Initialize in case of early failure
+    proc = None
+    return_code = -1
+    error_msg = None
+    
     try:
         with open(log_file, "w") as f:
             f.write(f"Job {job_index}: {eval_args.policy.name} on {eval_args.environment}\n")
@@ -319,10 +324,28 @@ def run_eval_job(job: JobCfg, run_folder: str, job_index: int, gpu_id: int = 0) 
                 env=env,
                 stdout=f,
                 stderr=subprocess.STDOUT,
+                start_new_session=True,  # Create new process group so we can kill all children
             )
             _active_processes.append(proc)
             
+            # Wait for process to complete (will return when process exits, crashes, or is killed)
             return_code = proc.wait()
+            
+            # Check if server crashed during eval
+            if server_proc is not None and server_proc.poll() is not None:
+                server_code = server_proc.returncode
+                if server_code != 0:
+                    print(f"[Job {job_index}] ⚠ Server crashed during eval (code {server_code})")
+                    if not error_msg:
+                        error_msg = f"Server crashed (code {server_code})"
+                    if return_code == 0:
+                        return_code = -1  # Mark eval as failed if server crashed
+            
+            # Detect if eval process crashed (non-zero exit code)
+            if return_code != 0:
+                print(f"[Job {job_index}] ✗ Eval process crashed or failed (exit code {return_code})")
+                if not error_msg:
+                    error_msg = f"Process exited with code {return_code}"
             
             if proc in _active_processes:
                 _active_processes.remove(proc)
@@ -334,10 +357,43 @@ def run_eval_job(job: JobCfg, run_folder: str, job_index: int, gpu_id: int = 0) 
             f.write(f"Finished: {end_time.isoformat()}\n")
             f.write(f"Duration: {(end_time - start_time).total_seconds():.1f}s\n")
             f.write(f"Exit code: {return_code}\n")
+            if error_msg:
+                f.write(f"Error: {error_msg}\n")
+    
+    except Exception as e:
+        error_msg = f"Exception: {str(e)}"
+        print(f"[Job {job_index}] ✗ Exception: {e}")
+        return_code = -1
+        end_time = datetime.now()
+        
+        # Ensure process is killed
+        if proc is not None and proc.poll() is None:
+            print(f"[Job {job_index}] Killing crashed process...")
+            _kill_process_tree(proc)
+            if proc in _active_processes:
+                _active_processes.remove(proc)
+        
+        # Log the error
+        try:
+            with open(log_file, "a") as f:
+                f.write("\n" + "=" * 60 + "\n")
+                f.write(f"Crashed: {end_time.isoformat()}\n")
+                f.write(f"Duration: {(end_time - start_time).total_seconds():.1f}s\n")
+                f.write(f"Exit code: {return_code}\n")
+                f.write(f"Error: {error_msg}\n")
+        except:
+            pass
     
     finally:
         # Always shutdown server when job is done
         shutdown_job_server(server_proc, job_index)
+        
+        # Final safety check: kill eval process if it's still running
+        if proc is not None and proc.poll() is None:
+            print(f"[Job {job_index}] ⚠ Eval process still running in finally block - killing")
+            _kill_process_tree(proc)
+            if proc in _active_processes:
+                _active_processes.remove(proc)
     
     return {
         "job_index": job_index,
@@ -347,6 +403,7 @@ def run_eval_job(job: JobCfg, run_folder: str, job_index: int, gpu_id: int = 0) 
         "duration_seconds": (end_time - start_time).total_seconds(),
         "gpu_id": gpu_id,
         "log_file": str(log_file),
+        "error": error_msg,
     }
 
 
@@ -418,7 +475,8 @@ def main(args: BatchArgs):
             result = run_eval_job(job, run_folder, i, gpu_id)
             results.append(result)
             status = "✓" if result["return_code"] == 0 else "✗"
-            print(f"[Job {i}] {status} Completed in {result['duration_seconds']:.1f}s\n")
+            error_str = f" ({result.get('error', '')})" if result.get("error") else ""
+            print(f"[Job {i}] {status} Completed in {result['duration_seconds']:.1f}s{error_str}\n")
     else:
         # Parallel execution with ThreadPoolExecutor (shares memory for process tracking)
         with ThreadPoolExecutor(max_workers=args.max_concurrent) as executor:
@@ -434,7 +492,8 @@ def main(args: BatchArgs):
                 result = future.result()
                 results.append(result)
                 status = "✓" if result["return_code"] == 0 else "✗"
-                print(f"[Job {result['job_index']}] {status} Completed in {result['duration_seconds']:.1f}s\n")
+                error_str = f" ({result.get('error', '')})" if result.get("error") else ""
+                print(f"[Job {result['job_index']}] {status} Completed in {result['duration_seconds']:.1f}s{error_str}\n")
     
     # Summary
     successful = sum(1 for r in results if r["return_code"] == 0)

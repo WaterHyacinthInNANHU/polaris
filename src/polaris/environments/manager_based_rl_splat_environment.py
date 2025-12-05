@@ -24,6 +24,7 @@ class MangerBasedRLSplatEnv(ManagerBasedRLEnv):
 
         # do dynamic setup here maybe
         if usd_file is not None:
+            self.usd_file = usd_file
             cfg.dynamic_setup(usd_file)
 
         super().__init__(cfg=cfg, *args, **kwargs)
