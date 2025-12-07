@@ -9,7 +9,7 @@ from polaris.utils import DATA_PATH
 NVIDIA_DROID = ArticulationCfg(
         prim_path="{ENV_REGEX_NS}/robot",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=str(DATA_PATH / "assets/nvidia_droid/noninstanceable.usd"),
+            usd_path=str(DATA_PATH / "nvidia_droid/noninstanceable.usd"),
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,

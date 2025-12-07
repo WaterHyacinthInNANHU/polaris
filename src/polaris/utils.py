@@ -7,7 +7,7 @@ from pathlib import Path
 from isaaclab.envs import DirectRLEnvCfg, ManagerBasedRLEnvCfg
 from isaaclab_tasks.utils import load_cfg_from_registry 
 
-DATA_PATH = Path("./PolaRiS-assets").resolve() if "POLARIS_DATA_PATH" not in os.environ else Path(os.environ["POLARIS_DATA_PATH"]).resolve()
+DATA_PATH = Path("./PolaRiS-environments").resolve() if "POLARIS_DATA_PATH" not in os.environ else Path(os.environ["POLARIS_DATA_PATH"]).resolve()
 
 def load_eval_initial_conditions(initial_conditions_file: str | None, usd: str) -> tuple[str, dict]:
     '''

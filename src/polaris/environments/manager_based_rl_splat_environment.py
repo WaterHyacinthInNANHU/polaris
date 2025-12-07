@@ -11,7 +11,6 @@ from isaacsim.core.utils.stage import get_current_stage
 from pxr import Semantics
 
 from polaris.splat_renderer import SplatRenderer
-from polaris.utils import DATA_PATH
 from polaris.environments.rubrics import Rubric, RubricResult
 
 
@@ -127,7 +126,7 @@ class MangerBasedRLSplatEnv(ManagerBasedRLEnv):
 
         # Allocate splats for all rigid objects in the scene and raytrace semantic tags
         for name in self.scene.rigid_objects:
-            path = DATA_PATH / "assets" / name / "splat.ply"
+            path = Path(self.usd_file).parent / "assets" / name / "splat.ply"
             if path.exists():
                 splats[name] = path
             else:
@@ -204,7 +203,7 @@ class MangerBasedRLSplatEnv(ManagerBasedRLEnv):
 
         # rigid bodies
         for name in self.scene.rigid_objects:
-            path = DATA_PATH / "assets" / name / "splat.ply"
+            path = Path(self.usd_file).parent / "assets" / name / "splat.ply"
             if (not "static" in name or transform_static) and path.exists(): # splat exists 
                 pos = self.scene[name].data.root_state_w[0, :3]
                 quat = self.scene[name].data.root_state_w[0, 3:7]

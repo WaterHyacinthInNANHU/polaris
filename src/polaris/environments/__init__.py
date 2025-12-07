@@ -28,7 +28,7 @@ gym.register(
     entry_point=MangerBasedRLSplatEnv,
     kwargs={
         "env_cfg_entry_point": DroidCfg,
-        "usd_file": str(DATA_PATH / "environments/block_stack_kitchen/g60_kitchen_table_zed.usd"),
+        "usd_file": str(DATA_PATH / "block_stack_kitchen/g60_kitchen_table_zed.usd"),
         "rubric": Rubric (
             criteria=[
                 checkers.reach("green_cube", threshold=0.2),
@@ -53,7 +53,7 @@ gym.register(
     order_enforce=False,
     kwargs={
         "env_cfg_entry_point": DroidCfg,
-        "usd_file": str(DATA_PATH / "environments/food_bussing/g60_corner.usd"),
+        "usd_file": str(DATA_PATH / "food_bussing/g60_corner.usd"),
         "rubric": Rubric (
             criteria=[
                 checkers.reach("ice_cream_", threshold=0.2),
@@ -74,7 +74,7 @@ gym.register(
     order_enforce=False,
     kwargs={
         "env_cfg_entry_point": DroidCfg,
-        "usd_file": str(DATA_PATH / "environments/pan_clean/g60_stovetop_zed.usd"),
+        "usd_file": str(DATA_PATH / "pan_clean/g60_stovetop_zed.usd"),
         "rubric": Rubric (
             criteria=[
                 checkers.reach("sponge", threshold=0.2),

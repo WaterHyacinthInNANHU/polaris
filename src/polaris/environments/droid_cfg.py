@@ -7,7 +7,6 @@ import isaaclab.utils.math as math
 import isaaclab.envs.mdp as mdp
 import numpy as np
 
-from polaris.utils import DATA_PATH
 from polaris.environments.robot_cfg import NVIDIA_DROID
 
 from pxr import Usd, UsdPhysics, UsdGeom
@@ -105,8 +104,6 @@ class SceneCfg(InteractiveSceneCfg):
         self.scene = scene
         if not robot_splat:
             self.robot.spawn.semantic_tags = [("class", "raytraced")]
-        if "double" in nightmare:
-            self.robot.spawn.usd_path = str(DATA_PATH / "assets/nvidia_droid/textureless.usd")
         stage = Usd.Stage.Open(
             environment_path
         )

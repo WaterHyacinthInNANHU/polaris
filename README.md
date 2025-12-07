@@ -1,13 +1,13 @@
 # PolaRiS
 
-PolaRiS is a evaluation framework for generalist policies. It provides a simple interface for evaluating models, rendering environments, and running experiments with minimal setup.
+PolaRiS is a evaluation framework for generalist policies. It provides tooling for reconstructing environments, evaluating models, and running experiments with minimal setup.
 
 ## Installation
 
 ### Clone the repository (recursively)
 
 ```bash
-git clone --recursive git@github.com:YOUR_USERNAME/PolaRiS.git
+git clone --recursive git@github.com:arhanjain/PolaRiS.git
 cd PolaRiS
 ```
 
@@ -17,19 +17,39 @@ If you cloned without `--recursive`:
 git submodule update --init --recursive
 ```
 
-### Sync environment with uv
+### Setup environment with uv
 
 ```bash
 uv sync
 ```
 
+### HuggingFace Datasets
+For using our evaluation DROID environments or simulation cotraining data, clone the datasets below.
+```bash
+uvx hf download owhan/PolaRiS-environments --repo-type=dataset --local-dir ./PolaRiS-environments   # Environments
+uvx hf download owhan/PolaRis-datasets --repo-type=dataset --local-dir ./PolaRiS-datasets           # Cotrain Datasets
+```
+
 ## Usage
 
-Run an evaluation on a USD environment:
+Run single policy, single task evaluation with an arbitrary policy (assuming already hosted)
 
 ```bash
-uv run scripts/eval.py --usd /path/to/environment.usd
+# uv run scripts/eval.py -h
+# Example: 
+
+uv run scripts/eval.py --environment DROID-FoodBussing --policy.name pi05 --policy.client DroidJointPos --policy.port 8010 --policy.open-loop-horizon 8
 ```
+
+Running a full scale evaluation across multiple checkpoints and tasks can be easily configured with a single python file representing the entire experiment. You can optionally name your experiments via `--run-folder` flag. For example configs, see [experiments/example.py](experiments/example.py)
+```bash
+uv run scripts/batch_eval.py --config experiments/example.py --run-folder runs/i-love-robots
+```
+
+## Creating Custom Evaluation Environments (Time Estimate: XX)
+
+## Adding Policies to Evaluate
+
 
 ## Project Structure
 
@@ -37,9 +57,8 @@ uv run scripts/eval.py --usd /path/to/environment.usd
 PolaRiS/
 ├── scripts/
 │   └── eval.py
-├── data/
-│   └── assets/
-│   └── environments/
+├── PolaRiS-environments/
+├── PolaRiS-datasets/
 ├── src/polaris/
 └── README.md
 ```
