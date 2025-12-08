@@ -7,7 +7,7 @@ PolaRiS is a evaluation framework for generalist policies. It provides tooling f
 ### Clone the repository (recursively)
 
 ```bash
-git clone --recursive git@github.com:arhanjain/PolaRiS.git
+git clone --recursive git@github.com:arhanjain/polaris.git
 cd PolaRiS
 ```
 
