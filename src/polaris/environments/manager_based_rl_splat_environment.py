@@ -218,7 +218,7 @@ class MangerBasedRLSplatEnv(ManagerBasedRLEnv):
         #  robot - this will only fire if setup_splat_robot has been called otherwise views will be empty
         for v_name in self.views:
             view = self.views[v_name]
-            pos, quat = view.get_world_poses()
+            pos, quat = view.get_world_poses(usd=False)
             pos, quat = pos.squeeze(), quat.squeeze()
             all_transforms[v_name] = (pos, quat)
 

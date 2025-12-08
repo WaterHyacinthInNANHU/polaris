@@ -76,7 +76,7 @@ print(f"Episode Finished. Success: {info['rubric']['success']}, Progress: {info[
 ```
 
 ### Run a π0.5 Policy in PolaRiS
-*Note: First run may take longer due to JIT compilation of the splat rasterization kernels*
+*Note: First run may take longer due to JIT compilation of the splat rasterization kernels. Ensure you have NVIDIA Drivers and CUDA Toolkit (nvcc) properly configured.*
 ```bash
 # Install evaluation environments (<2GB) and start evaluation process
 uvx hf download owhan/PolaRiS-environments --repo-type=dataset --local-dir ./PolaRiS-environments

@@ -6,6 +6,7 @@ import isaaclab.sim as sim_utils
 import isaaclab.utils.math as math
 import isaaclab.envs.mdp as mdp
 import numpy as np
+from typing import Sequence
 
 from polaris.environments.robot_cfg import NVIDIA_DROID
 
@@ -28,15 +29,29 @@ from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaacsim.core.prims import RigidPrim
 
 
-# Hack to fix updating camera poses, since it's broken in IsaacLab 2.3
+# Patch to fix updating camera poses, since it's broken in IsaacLab 2.3
 class FixedCamera(Camera):
-    def _initialize_impl(self):
-        super()._initialize_impl()
-        self._view = RigidPrim(self.cfg.prim_path, reset_xform_properties=False)
-        self._view.initialize()
 
-class FixedCameraCfg(CameraCfg):
-    class_type = FixedCamera
+    def _update_poses(self, env_ids: Sequence[int]):
+        """Computes the pose of the camera in the world frame with ROS convention.
+
+        This methods uses the ROS convention to resolve the input pose. In this convention,
+        we assume that the camera front-axis is +Z-axis and up-axis is -Y-axis.
+
+        Returns:
+            A tuple of the position (in meters) and quaternion (w, x, y, z).
+        """
+        # check camera prim exists
+        if len(self._sensor_prims) == 0:
+            raise RuntimeError("Camera prim is None. Please call 'sim.play()' first.")
+
+        # get the poses from the view
+        env_ids = env_ids.to(torch.int32)
+        poses, quat = self._view.get_world_poses(env_ids, usd=False) 
+        self._data.pos_w[env_ids] = poses
+        self._data.quat_w_world[env_ids] = math.convert_camera_frame_orientation_convention(
+            quat, origin="opengl", target="world"
+        )
 
 ### SceneCfg ###
 @configclass
@@ -47,13 +62,13 @@ class SceneCfg(InteractiveSceneCfg):
     robot = NVIDIA_DROID 
     
     wrist_cam = CameraCfg(
-    # wrist_cam = FixedCameraCfg(
+        class_type=FixedCamera,
         prim_path="{ENV_REGEX_NS}/robot/Gripper/Robotiq_2F_85/base_link/wrist_cam",
         height=720,
         width=1280,
         data_types=["rgb", "semantic_segmentation"],
         colorize_semantic_segmentation=False,
-        # update_latest_camera_pose=True,
+        update_latest_camera_pose=True,
         spawn=sim_utils.PinholeCameraCfg(
             focal_length=2.8,
             focus_distance=28.0,
@@ -311,7 +326,7 @@ class EnvCfg(ManagerBasedRLEnvCfg):
     curriculum = CurriculumCfg()
 
     def __post_init__(self):
-        self.episode_length_s = 30
+        self.episode_length_s = 5
 
         self.viewer.eye = (4.5, 0.0, 6.0)
         self.viewer.lookat = (0.0, 0.0, 0.0)
