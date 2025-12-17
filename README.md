@@ -26,19 +26,10 @@ By default we support CUDA 13. If you have an older version of CUDA installed, p
 uv sync 
 ```
 
-<!-- ### HuggingFace Datasets
-For using our evaluation DROID environments or simulation cotraining data, clone the datasets below.
-```bash
-# Environments
-uvx hf download owhan/PolaRiS-environments --repo-type=dataset --local-dir ./PolaRiS-environments
-# Cotrain Datasets
-uvx hf download owhan/PolaRis-datasets --repo-type=dataset --local-dir ./PolaRiS-datasets
-``` -->
-
 ## Getting Started
 First, download the PolaRiS environments (<2GB)
 ```bash
-uvx hf download owhan/PolaRiS-environments --repo-type=dataset --local-dir ./PolaRiS-environments
+uvx hf download owhan/PolaRiS-Hub --repo-type=dataset --local-dir ./PolaRiS-Hub
 ```
 
 ### Minimal Code Example

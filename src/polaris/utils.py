@@ -8,7 +8,7 @@ from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab_tasks.utils import load_cfg_from_registry
 
 DATA_PATH = (
-    Path("./PolaRiS-environments").resolve()
+    Path("./PolaRiS-Hub").resolve()
     if "POLARIS_DATA_PATH" not in os.environ
     else Path(os.environ["POLARIS_DATA_PATH"]).resolve()
 )
