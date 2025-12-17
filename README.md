@@ -108,8 +108,7 @@ See [docs/custom_policies.md](docs/custom_policies.md)
 ## Creating Custom Evaluation Environments 
 Time Estimate: 20 Minutes Human Time + 40 Minutes Offline Training
 
-Coming soon - 12/22
-<!-- See [docs/custom_environments.md](docs/custom_environments.md) -->
+See [docs/custom_environments.md](docs/custom_environments.md)
 
 ## Issues
 This codebase has been tested on CUDA 13 and CUDA 12 with NVIDIA 5090 and 3090 GPUs. Please raise an issue if you run into any issues.

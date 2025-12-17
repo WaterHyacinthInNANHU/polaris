@@ -3,12 +3,49 @@
 The environments we provide were scanned using ZED cameras, but the reconstruction pipeline is camera agnostic. 
 
 Capture a dense view video of a scene without motion blur, and run it through [COLMAP](https://colmap.github.io/install.html)
-```bash
+
+Once you have your COLMAP dataset, follow the instructions in [2DGS](https://github.com/hbb1/2d-gaussian-splatting) to obtain a splat and corresponding extracted mesh.
+
+Turn the `fuse_post.ply` mesh into a USD, and create an asset directory that follows this structure.
+```
+new_asset/
+├── mesh.usd
+├── splat.ply
+├── textures/ (optional, if USD requires textures)
+└── config.yaml (optional, USD parameter configuratoin)
+```
+
+Using the [online scene composition GUI](https://polaris-evals.github.io/compose-environments/), create a USD stage that composes the objects in the scene. Export and unzip the USD with the command below.
+```
+unzip scene.zip -d PolaRiS-environments/new_env/
+```
+
+You should now have a directory that looks something like this:
+```
+PolaRiS-environments/
+└── new_env/
+    ├── assets/
+    │   ├── object_1/
+    │   │   └── mesh.usd
+    │   │   └── textures/
+    │   ├── object_2/
+    │   │   └── mesh.usd
+    │   │   └── textures/
+    │   └── scene_splat/
+    │       ├── config.yaml
+    │       └── splat.ply
+    ├── scene.usda             # Main USD stage file
+    └── initial_conditions.json  (defined via GUI)
+```
+
+Add the new environment to the [environments file](../src/polaris/environments/__init__.py), following the same pattern as the default 6 environments. You can also see how to define a rubric to score rollouts with just a few lines of code.
+
+<!-- ```bash
 sudo apt install colmap ffmpeg
 
 # Split video into frames at desired FPS
 ffmpeg -i dense_view.mp4 -vf "fps=10" frames/dense_view_%04d.png
-```
+``` -->
 
 
 ## Uploading Environments to HuggingFace
