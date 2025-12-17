@@ -261,7 +261,7 @@ class Args:
     """Validate and upload a PolaRiS environment to Hugging Face."""
 
     env_dir: Path
-    """Path to the environment folder (e.g., /home/mingtong/polaris/PolaRiS-environments/food_bussing)"""
+    """Path to the environment folder (e.g., ~/polaris/PolaRiS-environments/food_bussing)"""
 
     repo_id: str = "owhan/PolaRiS-environments"
     """Target Hugging Face dataset repository"""
