@@ -10,7 +10,7 @@ from typing import Sequence
 
 from polaris.environments.robot_cfg import NVIDIA_DROID
 
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, UsdPhysics
 from isaaclab.utils import configclass, noise
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.managers import SceneEntityCfg
@@ -150,8 +150,7 @@ class SceneCfg(InteractiveSceneCfg):
                     offset=CameraCfg.OffsetCfg(pos=pos, rot=rot, convention="opengl"),
                 )
                 setattr(self, name, asset)
-            else:
-                # All Xforms specified in scene.usda should be RigidBody
+            elif UsdPhysics.RigidBodyAPI(child):
                 pos = child.GetAttribute("xformOp:translate").Get()
                 rot = child.GetAttribute("xformOp:orient").Get()
                 rot = (
