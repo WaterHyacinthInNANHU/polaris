@@ -102,7 +102,7 @@ Results include rollout videos, and a CSV summarizing success and normalized pro
 
 For the full list of all checkpoints and environments we provide for evaluation, see [checkpoints_and_envs.md](docs/checkpoints_and_envs.md)
 
-## Evaluating Your Policies In PolaRiS
+## Cotraining and Evaluating Your Policies In PolaRiS
 See [docs/custom_policies.md](docs/custom_policies.md)
 
 ## Creating Custom Evaluation Environments 

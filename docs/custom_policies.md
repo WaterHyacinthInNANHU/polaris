@@ -1,3 +1,7 @@
+# Cotraining 
+Coming soon - 12/22
+
+
 # Evaluating Custom Policies
 
 PolaRiS provides a simple interface for evaluating custom policies. For simplicity, we employ a server-client setup where the policy is hosted in a different process from the evaluation process. This can be helpful especialy when policies may be require lots of resources or conflicting dependencies. 
