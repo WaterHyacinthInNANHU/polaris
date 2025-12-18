@@ -87,7 +87,7 @@ Both the policy server and evaluation process should fit onto a single GPU (test
 cd third_party/openpi
 GIT_LFS_SKIP_SMUDGE=1 uv sync
 GIT_LFS_SKIP_SMUDGE=1 uv pip install -e .
-XLA_PYTHON_CLIENT_MEM_FRACTION=0.35 uv run scripts/serve_policy.py --port 8000 policy:checkpoint --policy.config pi05_droid_jointpos_fullfinetune --policy.dir gs://openpi-assets/checkpoints/polaris/pi05_droid_jointpos_polaris
+XLA_PYTHON_CLIENT_MEM_FRACTION=0.35 uv run scripts/serve_policy.py --port 8000 policy:checkpoint --policy.config pi05_droid_jointpos_polaris --policy.dir gs://openpi-assets/checkpoints/polaris/pi05_droid_jointpos_polaris
 
 # In a separate process, start evaluation process
 sudo apt install ffmpeg # for saving videos
