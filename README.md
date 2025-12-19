@@ -4,6 +4,9 @@
 
 # PolaRiS
 
+**[🌐 Website](https://polaris-evals.github.io/)** • **[📄 Paper](https://arxiv.org/abs/2512.16881)** • **[🤗 PolaRiS Hub](https://huggingface.co/datasets/owhan/PolaRiS-Hub)**
+
+
 PolaRiS is a evaluation framework for generalist policies. It provides tooling for reconstructing environments, evaluating models, and running experiments with minimal setup.
 
 ## Installation
