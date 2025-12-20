@@ -29,7 +29,7 @@ def main(eval_args: EvalArgs):
 
     from isaaclab_tasks.utils import parse_env_cfg  # noqa: E402
     from polaris.environments.manager_based_rl_splat_environment import (
-        MangerBasedRLSplatEnv,
+        ManagerBasedRLSplatEnv,
     )
     from polaris.utils import load_eval_initial_conditions
     from polaris.policy import InferenceClient
