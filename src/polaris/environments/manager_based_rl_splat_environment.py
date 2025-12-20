@@ -14,7 +14,7 @@ from polaris.splat_renderer import SplatRenderer
 from polaris.environments.rubrics import Rubric
 
 
-class MangerBasedRLSplatEnv(ManagerBasedRLEnv):
+class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
     rubric: Rubric | None = None
     _task_name: str | None = None
 

@@ -1,6 +1,6 @@
 import gymnasium as gym
 from polaris.environments.manager_based_rl_splat_environment import (
-    MangerBasedRLSplatEnv,
+    ManagerBasedRLSplatEnv,
 )
 from polaris.environments.droid_cfg import EnvCfg as DroidCfg
 from isaaclab.envs import ManagerBasedRLEnv
@@ -17,7 +17,7 @@ import polaris.environments.rubrics.checkers as checkers
 
 gym.register(
     id='DROID-BlockStackKitchen',
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     kwargs={
         "env_cfg_entry_point": DroidCfg,
         "usd_file": str(DATA_PATH / "block_stack_kitchen/scene.usda"),
@@ -40,7 +40,7 @@ gym.register(
 
 gym.register(
     id="DROID-FoodBussing",
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     disable_env_checker=True,
     order_enforce=False,
     kwargs={
@@ -64,7 +64,7 @@ gym.register(
 
 gym.register(
     id="DROID-PanClean",
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     disable_env_checker=True,
     order_enforce=False,
     kwargs={
@@ -83,7 +83,7 @@ gym.register(
 
 gym.register(
     id="DROID-MoveLatteCup",
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     disable_env_checker=True,
     order_enforce=False,
     kwargs={
@@ -101,7 +101,7 @@ gym.register(
 
 gym.register(
     id="DROID-OrganizeTools",
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     disable_env_checker=True,
     order_enforce=False,
     kwargs={
@@ -119,7 +119,7 @@ gym.register(
 
 gym.register(
     id="DROID-TapeIntoContainer",
-    entry_point=MangerBasedRLSplatEnv,
+    entry_point=ManagerBasedRLSplatEnv,
     disable_env_checker=True,
     order_enforce=False,
     kwargs={
