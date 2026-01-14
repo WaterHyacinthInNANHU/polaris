@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Arhan Jain", email = "arhan.j04@gmail.com" }
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"  # isaaclab 2.3.0 only supports Python 3.11
 dependencies = [
     "isaaclab[all,isaacsim]==2.3.0",
     "mediapy>=1.2.4",
@@ -24,10 +24,15 @@ dependencies = [
 polaris = "polaris.cli:main"
 
 [tool.uv]
+# Only resolve for Linux x86_64 (Isaac Sim only supports this)
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+prerelease = "allow"
+index-strategy = "unsafe-best-match"
+
 override-dependencies = [
     "pywin32==306; sys_platform == 'win32'",
-    "torch>=2.9.0", # Change here for different CUDA version
-    "torchvision>=0.24.0", # Change here for different CUDA version
+    "torch==2.5.1+cu124", # CUDA 12.x compatible
+    "torchvision==0.20.1+cu124", # CUDA 12.x compatible
 ]
 
 [build-system]
@@ -51,11 +56,11 @@ torchvision = { index = "torch" }
 [[tool.uv.index]]
 name = "nvidia"
 url = "https://pypi.nvidia.com/"
-explicit = true
+# Not explicit - allow isaaclab packages to be found
 
 [[tool.uv.index]]
 name = "torch"
-url = "https://download.pytorch.org/whl/cu130" # Change here for different CUDA version
+url = "https://download.pytorch.org/whl/cu124" # Changed for CUDA 12.x compatibility
 explicit = true
 
 
