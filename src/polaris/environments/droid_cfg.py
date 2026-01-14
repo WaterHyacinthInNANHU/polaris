@@ -285,6 +285,62 @@ def gripper_pos(
     return joint_pos
 
 
+def arm_joint_vel(
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+):
+    """7D arm joint velocities."""
+    robot = env.scene[asset_cfg.name]
+    joint_names = [
+        "panda_joint1",
+        "panda_joint2",
+        "panda_joint3",
+        "panda_joint4",
+        "panda_joint5",
+        "panda_joint6",
+        "panda_joint7",
+    ]
+    joint_indices = [
+        i for i, name in enumerate(robot.data.joint_names) if name in joint_names
+    ]
+    joint_vel = robot.data.joint_vel[:, joint_indices]
+    return joint_vel
+
+
+def gripper_vel(
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+):
+    """1D gripper velocity."""
+    robot = env.scene[asset_cfg.name]
+    joint_names = ["finger_joint"]
+    joint_indices = [
+        i for i, name in enumerate(robot.data.joint_names) if name in joint_names
+    ]
+    joint_vel = robot.data.joint_vel[:, joint_indices]
+
+    # rescale to match gripper_pos normalization
+    joint_vel = joint_vel / (np.pi / 4)
+
+    return joint_vel
+
+
+def ee_pose(env: ManagerBasedRLEnv):
+    """7D end-effector pose: xyz position + wxyz quaternion."""
+    ee_frame = env.scene["ee_frame"]
+    # Get position and quaternion from the frame transformer
+    ee_pos = ee_frame.data.target_pos_w[:, 0, :]  # (num_envs, 3)
+    ee_quat = ee_frame.data.target_quat_w[:, 0, :]  # (num_envs, 4) wxyz
+    return torch.cat([ee_pos, ee_quat], dim=-1)
+
+
+def ee_vel(env: ManagerBasedRLEnv):
+    """6D end-effector velocity: linear (3) + angular (3)."""
+    ee_frame = env.scene["ee_frame"]
+    # Get velocities from the frame transformer
+    ee_lin_vel = ee_frame.data.target_lin_vel_w[:, 0, :]  # (num_envs, 3)
+    ee_ang_vel = ee_frame.data.target_ang_vel_w[:, 0, :]  # (num_envs, 3)
+    return torch.cat([ee_lin_vel, ee_ang_vel], dim=-1)
+
+
 @configclass
 class ObservationCfg:
     @configclass
@@ -292,9 +348,13 @@ class ObservationCfg:
         """Observations for policy."""
 
         arm_joint_pos = ObsTerm(func=arm_joint_pos)
+        arm_joint_vel = ObsTerm(func=arm_joint_vel)
         gripper_pos = ObsTerm(
             func=gripper_pos, noise=noise.GaussianNoiseCfg(std=0.05), clip=(0, 1)
         )
+        gripper_vel = ObsTerm(func=gripper_vel)
+        ee_pose = ObsTerm(func=ee_pose)
+        ee_vel = ObsTerm(func=ee_vel)
 
         def __post_init__(self) -> None:
             self.enable_corruption = False
