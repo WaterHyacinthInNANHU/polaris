@@ -332,12 +332,36 @@ def ee_pose(env: ManagerBasedRLEnv):
     return torch.cat([ee_pos, ee_quat], dim=-1)
 
 
+# Cache the end-effector body index to avoid repeated lookups
+_ee_body_idx = None
+
+
 def ee_vel(env: ManagerBasedRLEnv):
-    """6D end-effector velocity: linear (3) + angular (3)."""
-    ee_frame = env.scene["ee_frame"]
-    # Get velocities from the frame transformer
-    ee_lin_vel = ee_frame.data.target_lin_vel_w[:, 0, :]  # (num_envs, 3)
-    ee_ang_vel = ee_frame.data.target_ang_vel_w[:, 0, :]  # (num_envs, 3)
+    """6D end-effector velocity: linear (3) + angular (3).
+
+    Note: FrameTransformerData in Isaac Lab 2.3.0 does not provide velocity attributes.
+    Instead, we get velocities from the robot articulation's body data.
+    """
+    global _ee_body_idx
+    robot = env.scene["robot"]
+
+    # Find the end-effector body index on first call
+    if _ee_body_idx is None:
+        # The end-effector is the base_link of the Robotiq gripper
+        ee_body_ids, ee_body_names = robot.find_bodies("base_link")
+        if len(ee_body_ids) == 0:
+            # Fallback: try to find any link with "gripper" or "ee" in name
+            ee_body_ids, ee_body_names = robot.find_bodies(".*[Gg]ripper.*|.*_ee.*")
+        if len(ee_body_ids) == 0:
+            raise RuntimeError(
+                f"Could not find end-effector body. Available bodies: {robot.body_names}"
+            )
+        _ee_body_idx = ee_body_ids[0]
+
+    # Get velocities from the robot articulation body data
+    # Shape: (num_envs, num_bodies, 3)
+    ee_lin_vel = robot.data.body_lin_vel_w[:, _ee_body_idx, :]  # (num_envs, 3)
+    ee_ang_vel = robot.data.body_ang_vel_w[:, _ee_body_idx, :]  # (num_envs, 3)
     return torch.cat([ee_lin_vel, ee_ang_vel], dim=-1)
 
 
