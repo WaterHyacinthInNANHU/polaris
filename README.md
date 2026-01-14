@@ -58,7 +58,7 @@ simulation_app = app_launcher.app
 
 import polaris.environments
 from isaaclab_tasks.utils import parse_env_cfg  # noqa: E402
-from polaris.environments.manager_based_rl_splat_environment import MangerBasedRLSplatEnv
+from polaris.environments.manager_based_rl_splat_environment import ManagerBasedRLSplatEnv
 from polaris.utils import load_eval_initial_conditions
 
 env_cfg = parse_env_cfg(
@@ -67,7 +67,7 @@ env_cfg = parse_env_cfg(
     num_envs=1,
     use_fabric=True,
 )
-env: MangerBasedRLSplatEnv = gym.make("DROID-FoodBussing", cfg=env_cfg)   # type: ignore
+env: ManagerBasedRLSplatEnv = gym.make("DROID-FoodBussing", cfg=env_cfg)   # type: ignore
 language_instruction, initial_conditions = load_eval_initial_conditions(env.usd_file)
 obs, info = env.reset(object_positions = initial_conditions[0])
 
