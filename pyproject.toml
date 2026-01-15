@@ -48,7 +48,7 @@ dev = [
 isaacsim = { index = "nvidia" }
 diff-surfel-rasterization = { path = "src/diff-surfel-rasterization", editable=true}
 simple-knn = { path = "src/simple-knn", editable=true}
-openpi-client = { path = "third_party/openpi/packages/openpi-client" }
+openpi-client = { path = "../../../libs/openpi/packages/openpi-client" }
 torch = { index = "torch" }
 torchvision = { index = "torch" }
 
