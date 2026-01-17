@@ -33,6 +33,7 @@ override-dependencies = [
     "pywin32==306; sys_platform == 'win32'",
     "torch==2.5.1+cu124", # CUDA 12.x compatible
     "torchvision==0.20.1+cu124", # CUDA 12.x compatible
+    "sympy>=1.13.1", # Allow any sympy 1.13.x to resolve torch/isaacsim conflict
 ]
 
 [build-system]
