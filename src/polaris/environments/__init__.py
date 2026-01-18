@@ -134,3 +134,74 @@ gym.register(
         ),
     },
 )
+
+
+# Target position for Rubik's cube placement task
+RUBIKS_CUBE_TARGET_POS = [0.50, 0.10, 0.08]
+
+gym.register(
+    id="DROID-RubiksCubeKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "rubiks_cube_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                checkers.reach("rubiks_cube", threshold=0.15),
+                (checkers.lift("rubiks_cube", default_height=0.08, threshold=0.03), [0]),
+                (checkers.pose_match(
+                    "rubiks_cube",
+                    target_pos=RUBIKS_CUBE_TARGET_POS,
+                    target_quat=None,
+                    pos_threshold=0.05,
+                    rot_threshold=0.1,
+                ), [1]),
+            ]
+        ),
+    },
+)
+
+
+# Target poses for playing cards placement task
+PLAYING_CARDS_0_TARGET_POS = [0.432594, 0.077528, 0.058701]
+PLAYING_CARDS_0_TARGET_QUAT = [-0.030789, 0.006440, -0.700888, 0.712577]  # (w, x, y, z)
+PLAYING_CARDS_1_TARGET_POS = [0.417737, 0.270094, 0.059539]
+PLAYING_CARDS_1_TARGET_QUAT = [-0.687985, 0.725225, 0.013425, -0.023347]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-PlayingCardsKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "playing_cards_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach each card
+                checkers.reach("playing_cards_0", threshold=0.15),
+                checkers.reach("playing_cards_1", threshold=0.15),
+                # Lift each card
+                (checkers.lift("playing_cards_0", default_height=0.03, threshold=0.03), [0]),
+                (checkers.lift("playing_cards_1", default_height=0.03, threshold=0.03), [1]),
+                # Place each card at target position
+                (checkers.pose_match(
+                    "playing_cards_0",
+                    target_pos=PLAYING_CARDS_0_TARGET_POS,
+                    target_quat=PLAYING_CARDS_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.1,
+                ), [2]),
+                (checkers.pose_match(
+                    "playing_cards_1",
+                    target_pos=PLAYING_CARDS_1_TARGET_POS,
+                    target_quat=PLAYING_CARDS_1_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.1,
+                ), [3]),
+            ]
+        ),
+    },
+)

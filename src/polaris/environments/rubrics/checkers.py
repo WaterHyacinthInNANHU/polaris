@@ -5,6 +5,44 @@ import numpy as np
 import torch
 
 
+def pose_match(obj_name, target_pos, target_quat=None, pos_threshold=0.05, rot_threshold=0.1):
+    """
+    Check if object reaches a target pose (position and optionally orientation).
+
+    Args:
+        obj_name: Name of the object to check
+        target_pos: Target position [x, y, z]
+        target_quat: Optional target quaternion [qw, qx, qy, qz]. If None, only position is checked.
+        pos_threshold: Position distance threshold (meters)
+        rot_threshold: Rotation difference threshold (quaternion distance, ~0.1 = ~11 degrees)
+
+    Example:
+        pose_match("wood_cube", [0.39, -0.09, -0.11], [0.54, 0, 0, 0], pos_threshold=0.05)
+    """
+    target_pos_tensor = torch.tensor(target_pos, dtype=torch.float32)
+    target_quat_tensor = torch.tensor(target_quat, dtype=torch.float32) if target_quat else None
+
+    def checker(env):
+        obj_pos = env.scene[obj_name].data.root_pos_w[0]
+        pos_dist = torch.norm(obj_pos - target_pos_tensor.to(obj_pos.device))
+
+        if pos_dist >= pos_threshold:
+            return False
+
+        if target_quat_tensor is not None:
+            obj_quat = env.scene[obj_name].data.root_quat_w[0]  # [qw, qx, qy, qz]
+            target_q = target_quat_tensor.to(obj_quat.device)
+            # Quaternion distance: 1 - |q1 · q2|
+            dot = torch.abs(torch.sum(obj_quat * target_q))
+            rot_dist = 1.0 - dot
+            if rot_dist >= rot_threshold:
+                return False
+
+        return True
+
+    return checker
+
+
 def reach(obj_name, threshold=0.05):
     """
     Returns a checker function that expects (env).
