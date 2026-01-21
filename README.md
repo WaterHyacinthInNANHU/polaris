@@ -100,13 +100,20 @@ Results include rollout videos, and a CSV summarizing success and normalized pro
 
 ### Off-the-shelf Evaluation Environments
 | Environment Name | Prompt | Image |
-| :--- | :--- | :--- | 
+| :--- | :--- | :--- |
 | DROID-BlockStackKitchen | Place and stack the blocks on top of the green tray | <img src="docs/images/stack.png" width="200"> |
 | DROID-FoodBussing | Put all the foods in the bowl | <img src="docs/images/foodbus.png" width="200"> |
 | DROID-PanClean | Use the yellow sponge to scrub the blue handle frying pan | <img src="docs/images/panclean.png" width="200"> |
 | DROID-MoveLatteCup | put the latte art cup on top of the cutting board | <img src="docs/images/latte-cup.png" width="200"> |
 | DROID-OrganizeTools | put the scissor into the large container | <img src="docs/images/organize-tools.png" width="200"> |
 | DROID-TapeIntoContainer | put the tape into the container | <img src="docs/images/tape-into-container.png" width="200"> |
+| DROID-RubiksCubeKitchen | Pick up the Rubik's cube and place it at the target | - |
+| DROID-PlayingCardsKitchen | Place the playing card at the target position | - |
+| DROID-PhoneStandKitchen | Place the phone on the phone stand | - |
+| DROID-ShoeKitchen | Put the shoe in the shoe box | - |
+| DROID-RubiksBoxKitchen | Put the Rubik's cube in the wooden box | - |
+| DROID-BookKitchen | Place the book on the bookcase | - |
+| DROID-ForkCupKitchen | Flip the fork and insert it back into the cup | - |
 
 ### PolaRiS-Ready Policies
 
