@@ -258,3 +258,99 @@ gym.register(
         ),
     },
 )
+
+
+# Target poses for rubiks box kitchen task
+RUBIKSCUBE_0_TARGET_POS = [0.50, 0.262762, 0.149124]
+RUBIKSCUBE_0_TARGET_QUAT = [0.008727, 0.0, 0.999962, 0.0]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-RubiksBoxKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "rubiks_box_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach Rubiks cube
+                checkers.reach("rubikscube_0", threshold=0.15),
+                # Lift Rubiks cube
+                (checkers.lift("rubikscube_0", default_height=0.05, threshold=0.03), [0]),
+                # Place Rubiks cube in wooden box
+                (checkers.pose_match(
+                    "rubikscube_0",
+                    target_pos=RUBIKSCUBE_0_TARGET_POS,
+                    target_quat=RUBIKSCUBE_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.3,
+                ), [1]),
+            ]
+        ),
+    },
+)
+
+
+# Target poses for book kitchen task
+BOOK_0_TARGET_POS = [0.37545, 0.294808, 0.179766]
+BOOK_0_TARGET_QUAT = [1.0, 0.0, -0.000344, 0.000026]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-BookKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "book_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach book
+                checkers.reach("book_0", threshold=0.15),
+                # Lift book
+                (checkers.lift("book_0", default_height=0.05, threshold=0.03), [0]),
+                # Place book on bookcase
+                (checkers.pose_match(
+                    "book_0",
+                    target_pos=BOOK_0_TARGET_POS,
+                    target_quat=BOOK_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.3,
+                ), [1]),
+            ]
+        ),
+    },
+)
+
+
+# Target poses for fork cup kitchen task
+FORK_0_TARGET_POS = [0.50, 0.279115, 0.103304]
+FORK_0_TARGET_QUAT = [0.707107, 0.707107, 0.0, 0.0]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-ForkCupKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "fork_cup_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach fork
+                checkers.reach("fork_0", threshold=0.15),
+                # Lift fork
+                (checkers.lift("fork_0", default_height=0.05, threshold=0.03), [0]),
+                # Place fork in cup
+                (checkers.pose_match(
+                    "fork_0",
+                    target_pos=FORK_0_TARGET_POS,
+                    target_quat=FORK_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.3,
+                ), [1]),
+            ]
+        ),
+    },
+)
