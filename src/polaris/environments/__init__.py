@@ -194,3 +194,67 @@ gym.register(
         ),
     },
 )
+
+
+# Target poses for phone stand task
+PHONE_0_TARGET_POS = [0.50, 0.20, 0.15]
+PHONE_0_TARGET_QUAT = [1.0, 0.0, 0.0, 0.0]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-PhoneStandKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "phone_stand_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach phone
+                checkers.reach("phone_0", threshold=0.15),
+                # Lift phone
+                (checkers.lift("phone_0", default_height=0.05, threshold=0.03), [0]),
+                # Place phone at target position (on phone_stand_0)
+                (checkers.pose_match(
+                    "phone_0",
+                    target_pos=PHONE_0_TARGET_POS,
+                    target_quat=PHONE_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.2,
+                ), [1]),
+            ]
+        ),
+    },
+)
+
+
+# Target poses for shoe kitchen task
+SHOE_0_TARGET_POS = [0.500336, 0.190762, 0.074055]
+SHOE_0_TARGET_QUAT = [-0.498205, -0.498078, 0.502018, 0.501684]  # (w, x, y, z)
+
+gym.register(
+    id="DROID-ShoeKitchen",
+    entry_point=ManagerBasedRLSplatEnv,
+    disable_env_checker=True,
+    order_enforce=False,
+    kwargs={
+        "env_cfg_entry_point": DroidCfg,
+        "usd_file": str(DATA_PATH / "shoe_kitchen/scene.usda"),
+        "rubric": Rubric(
+            criteria=[
+                # Reach shoe
+                checkers.reach("shoe_0", threshold=0.15),
+                # Lift shoe
+                (checkers.lift("shoe_0", default_height=0.05, threshold=0.03), [0]),
+                # Place shoe in shoe box
+                (checkers.pose_match(
+                    "shoe_0",
+                    target_pos=SHOE_0_TARGET_POS,
+                    target_quat=SHOE_0_TARGET_QUAT,
+                    pos_threshold=0.05,
+                    rot_threshold=0.3,
+                ), [1]),
+            ]
+        ),
+    },
+)
