@@ -24,6 +24,7 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
         *args,
         rubric: Rubric | None = None,
         usd_file: str | None = None,
+        show_target_marker: bool = False,
         **kwargs,
     ):
         # do dynamic setup here maybe
@@ -35,6 +36,18 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
         self.setup_splat_world_and_robot_views()
         self.setup_splat_robot()
         self.rubric = rubric
+
+        # Enable target marker if requested
+        if show_target_marker:
+            self._enable_target_marker()
+
+    def _enable_target_marker(self):
+        """Enable the target marker prim if it exists."""
+        stage = get_current_stage()
+        marker_prim = stage.GetPrimAtPath("/World/envs/env_0/scene/target_marker")
+        if marker_prim and marker_prim.IsValid():
+            marker_prim.SetActive(True)
+            print("[INFO] Target marker enabled")
 
     def _evaluate_rubric(self) -> dict:
         """Evaluate rubric and return results for info dict."""
