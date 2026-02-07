@@ -37,6 +37,10 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
         self.setup_splat_robot()
         self.rubric = rubric
 
+        # Whether step()/reset() perform GS rendering to produce obs["splat"].
+        # Set to False for regrasp pipeline where the recorder renders on demand.
+        self._splat_in_step = True
+
         # Enable target marker if requested
         if show_target_marker:
             self._enable_target_marker()
@@ -96,7 +100,11 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
         obs = (
             self.observation_manager.compute()
         )  # update observation after setting ICs if needed
-        obs["splat"] = self.custom_render(expensive, transform_static=True)
+        if self._splat_in_step:
+            obs["splat"] = self.custom_render(expensive, transform_static=True)
+        else:
+            # Still position static splats once so on-demand renders work later
+            self.transform_sim_to_splat(transform_static=True)
 
         # Evaluate rubric and add to info
         info.update(self._evaluate_rubric())
@@ -115,8 +123,8 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
             Whether to perform expensive (splat) rendering operations.
         """
         obs, rew, done, trunc, info = super().step(action)
-        obs["splat"] = self.custom_render(expensive)
-        # obs["splat"] = {cam: self.get_robot_from_sim()[cam]["rgb"] for cam in self.get_robot_from_sim()}
+        if self._splat_in_step:
+            obs["splat"] = self.custom_render(expensive)
 
         # Evaluate rubric and add to info
         info.update(self._evaluate_rubric())
@@ -125,6 +133,44 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
 
     def custom_render(self, expensive: bool, transform_static: bool = False):
         """
+        Render RGB images for all camera sensors, optionally compositing simulated robot pixels
+        onto a Splat-based render.
+
+        This method has two modes:
+
+        - Expensive mode (`expensive=True`):
+            1) Transforms the current simulation state into the "splat" representation via
+                 `transform_sim_to_splat(transform_static=...)`.
+            2) Renders the scene using the splat renderer (`render_splat()`), producing a dict
+                 mapping camera names to RGB images.
+            3) Retrieves per-camera robot segmentation masks and corresponding simulation RGB
+                 images via `get_robot_from_sim()`.
+            4) For each camera, composites the robot pixels from the simulation render onto the
+                 splat image using the boolean mask:
+                        - where mask is True: use simulation RGB (robot)
+                        - where mask is False: use splat RGB (background)
+                 If a camera is missing from the splat output, a zero image matching the sim RGB
+                 shape is used as the background.
+
+        - Non-expensive mode (`expensive=False`):
+            Returns raw RGB images directly from the scene's camera sensors without any splat
+            rendering or compositing. The returned images are converted from torch tensors to
+            NumPy arrays.
+
+        Args:
+                expensive (bool): If True, perform splat rendering and robot compositing. If False,
+                        return sensor RGB outputs directly.
+                transform_static (bool, optional): Passed to `transform_sim_to_splat()`. Typically
+                        controls whether static elements are re-transformed/updated. Defaults to False.
+
+        Returns:
+                dict[str, numpy.ndarray]: Mapping from camera name to an RGB image array (H x W x 3),
+                suitable for visualization or logging.
+
+        Notes:
+                - Expects `get_robot_from_sim()` to return, per camera, a dict with keys:
+                    `{"mask": <bool array>, "rgb": <H x W x 3 array>}`.
+                - In the non-expensive path, only sensors that are instances of `Camera` are used.
         Render the environment
         """
         if expensive:
@@ -147,6 +193,103 @@ class ManagerBasedRLSplatEnv(ManagerBasedRLEnv):
                         self.scene[cam].data.output["rgb"][0].detach().cpu().numpy()
                     )
         return rgb
+
+    def render_splat_for_env(self, env_id: int = 0) -> dict:
+        """Render GS composite images for a specific env_id on demand.
+
+        Performs the same pipeline as custom_render(expensive=True) but indexes
+        camera poses and sim buffers by env_id instead of hardcoded [0].
+        Call after env.step() so that sim camera buffers are already populated.
+
+        Args:
+            env_id: Environment index to render for.
+
+        Returns:
+            dict mapping camera name to composited RGB numpy array (H, W, 3) uint8.
+        """
+        # 1. Update splat transforms for this env's object/robot poses
+        self._transform_splats_for_env(env_id)
+
+        # 2. Render GS with this env's camera extrinsics
+        rgb = self._render_splat_for_env(env_id)
+
+        # 3. Composite robot from sim onto splat background
+        mask_and_rgb = self._get_sim_render_for_env(env_id)
+        for cam in mask_and_rgb:
+            og_img = rgb[cam] if cam in rgb else np.zeros_like(mask_and_rgb[cam]["rgb"])
+            mask = mask_and_rgb[cam]["mask"]
+            sim_img = mask_and_rgb[cam]["rgb"]
+            rgb[cam] = np.where(mask, sim_img, og_img)
+
+        return rgb
+
+    def _transform_splats_for_env(self, env_id: int):
+        """Update splat renderer transforms using object/robot state from env_id."""
+        all_transforms = {}
+
+        for name in self.scene.rigid_objects:
+            path = Path(self.usd_file).parent / "assets" / name / "splat.ply"
+            # Skip static objects (already positioned during reset)
+            if "static" not in name and path.exists():
+                pos = self.scene[name].data.root_state_w[env_id, :3]
+                quat = self.scene[name].data.root_state_w[env_id, 3:7]
+                all_transforms[name] = (pos, quat)
+
+        for v_name in self.views:
+            view = self.views[v_name]
+            pos, quat = view.get_world_poses(usd=False)
+            pos, quat = pos.squeeze(), quat.squeeze()
+            all_transforms[v_name] = (pos, quat)
+
+        if all_transforms:
+            self.splat_renderer.transform_many(all_transforms)
+
+    def _render_splat_for_env(self, env_id: int) -> dict:
+        """Render GS using camera extrinsics from env_id."""
+        cam_extrinsics_dict = {}
+        for name in self.splat_renderer.cameras:
+            if "wrist" in name:
+                pos = self.scene[name].data.pos_w[env_id].detach().cpu().numpy()
+                quat = self.scene[name].data.quat_w_world[env_id]
+                rot = math.matrix_from_quat(quat).detach().cpu().numpy()
+                # p_mat coordinate transform is applied inside splat_renderer.render()
+                cam_extrinsics_dict[name] = {"pos": pos, "rot": rot}
+
+        if len(self.splat_renderer.pcds) > 0:
+            rgb = self.splat_renderer.render(cam_extrinsics_dict)
+        else:
+            rgb = {
+                name: torch.zeros(
+                    (
+                        self.splat_renderer.cameras[name].image_height,
+                        self.splat_renderer.cameras[name].image_width,
+                        3,
+                    )
+                )
+                for name in cam_extrinsics_dict
+            }
+
+        for k, v in rgb.items():
+            rgb[k] = v.detach().cpu().numpy()
+            rgb[k] = np.clip(rgb[k], 0, 1)
+            rgb[k] = (rgb[k] * 255).astype(np.uint8)
+            rgb[k] = cv2.resize(rgb[k], (rgb[k].shape[1] // 2, rgb[k].shape[0] // 2))
+            rgb[k] = cv2.resize(rgb[k], (rgb[k].shape[1] * 2, rgb[k].shape[0] * 2))
+
+        return rgb
+
+    def _get_sim_render_for_env(self, env_id: int) -> dict:
+        """Get robot segmentation mask and sim RGB for a specific env_id."""
+        ret = {}
+        for cam in self.scene.sensors:
+            if not isinstance(self.scene.sensors[cam], Camera):
+                continue
+            base_cam = self.scene[cam]
+            mask = base_cam.data.output["semantic_segmentation"][env_id].detach().cpu().numpy()
+            img = base_cam.data.output["rgb"][env_id].detach().cpu().numpy()
+            mask = np.where(mask >= 2, 1, 0)
+            ret[cam] = {"rgb": img, "mask": mask}
+        return ret
 
     def setup_splat_world_and_robot_views(self):
         splats = {}
